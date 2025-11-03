@@ -2,18 +2,22 @@ import express from "express";
 import cors from "cors";
 
 const app = express();
-app.use(express.json());
-app.use(cors({
-  origin: [
-    "https://seninsiten.wordpress.com" // <-- WordPress alan adın (gerekirse yenilerini ekle)
-    // "https://seninsiten.com"
-  ]
-}));
 
-// Basit sağlık kontrolü
+// CORS — tüm origin'lere izin ver (test için güvenli, cookie kullanmıyoruz)
+app.use(cors({
+  origin: true,                           // gelen Origin'i otomatik kabul et
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+app.options("*", cors());                 // preflight (OPTIONS) yanıtı
+
+app.use(express.json());
+
 app.get("/", (_req, res) => {
   res.send("Bengü AI backend çalışıyor ✅");
 });
+
+// ... /api/chat route'un aynı kalsın
 
 // Chat endpoint
 app.post("/api/chat", async (req, res) => {
