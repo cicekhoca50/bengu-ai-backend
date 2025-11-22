@@ -20,11 +20,33 @@ app.get("/", (_req, res) => {
 
 
 // =====================
-// 1) AI SOHBET ENDPOINT
+// =====================
+// 1) AI SOHBET ENDPOINT (Çiçek Hoca & Gamze Hoca)
 // =====================
 app.post("/api/chat", async (req, res) => {
   try {
-    const { messages } = req.body || {};
+    const { messages, teacher } = req.body || {};
+
+    // teacher: "cicek" ya da "gamze"
+    let systemPrompt;
+
+    if (teacher === "gamze") {
+      systemPrompt =
+        "Sen rehber öğretmen Gamze Hoca'sın. " +
+        "Öğrencilerin sınav kaygısı, motivasyon, çalışma planı, zaman yönetimi, kariyer seçimi gibi konularda sorularını cevaplıyorsun. " +
+        "Yumuşak, destekleyici, anlayışlı bir dil kullan. " +
+        "Gerektiğinde örnek günlük/haftalık çalışma planları ver, mola öner ve öğrencinin duygusunu da önemse. " +
+        "Akademik konu anlatımından çok, rehberlik ve yönlendirmeye odaklan.";
+    } else {
+      // Varsayılan: Çiçek Hoca (akademik)
+      systemPrompt =
+        "Sen akademik ders anlatan Çiçek Hoca'sın. " +
+        "Öğrencilerin özellikle matematik, fizik, elektrik-elektronik ve üniversite dersleriyle ilgili sorularını cevaplıyorsun. " +
+        "Konu anlatırken adım adım, örneklerle ve sade bir dille açıkla. " +
+        "Formülleri açık yaz, gerekirse tablo ve maddeler kullan. " +
+        "Soruyu anlamadan asla cevaplama; gerekiyorsa önce neyi bilip bilmediğini kısa sorularla netleştir. " +
+        "Kısaca: samimi ama akademik ve sistemli bir anlatım kullan.";
+    }
 
     const r = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -35,10 +57,7 @@ app.post("/api/chat", async (req, res) => {
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          {
-            role: "system",
-            content: "Sen eğitim danışmanı Çiçek Hoca'sın. Öğrencilerin sorularını sade ve öğretici bir dille cevapla."
-          },
+          { role: "system", content: systemPrompt },
           ...(messages || [])
         ],
         temperature: 0.3
@@ -57,7 +76,6 @@ app.post("/api/chat", async (req, res) => {
     res.status(500).json({ error: e.message || "Sunucu hatası (chat)" });
   }
 });
-
 
 // =============================
 // 2) KONU ÖZETİ & QUIZ ENDPOINT
@@ -116,5 +134,6 @@ app.post("/api/summary", async (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
   console.log("✅ Bengü AI backend çalışıyor")
 );
+
 
 
