@@ -63,12 +63,50 @@ app.post("/api/chat", async (req, res) => {
 // 2) GÖRSEL ÜRETİCİ ENDPOINT
 //    /api/visual
 // =========================
+// =========================
+// 2) GÖRSEL ÜRETİCİ ENDPOINT
+//    /api/visual  (Eğitim Posteri Modu)
+// =========================
 app.post("/api/visual", async (req, res) => {
   try {
     const { prompt, size = "1024x1024" } = req.body || {};
     if (!prompt) {
       return res.status(400).json({ error: "prompt gerekli" });
     }
+
+    // Kullanıcının konusunu al
+    const topic = prompt.trim();
+
+    // Eğitim posteri için ayrıntılı talimat
+    const visualPrompt = `
+Create a clean, high-resolution **educational poster (infographic)** about the topic:
+"${topic}".
+
+The style must match these requirements:
+
+- Format: EDUCATIONAL POSTER for high-school / university students.
+- Layout:
+  - Big main title on the top (in Turkish).
+  - Optional short subtitle under the title.
+  - 3 to 6 colored boxes or sections with short Turkish labels.
+  - Each box explains one key idea about the topic.
+- Design:
+  - Use pastel colors, like soft orange, teal, light blue and green.
+  - Use rounded rectangles for the boxes.
+  - Add simple line icons and simple circuit / physics diagrams when relevant.
+  - Add clear and readable math formulas where needed.
+  - Use lots of whitespace. Do NOT make it crowded.
+  - The overall look must be clear, modern and minimal.
+- Content:
+  - Focus on formulas, key concepts and simple diagrams about "${topic}".
+  - Use **short Turkish text** for titles and labels (1–4 words).
+  - Prefer symbols and formulas instead of long sentences.
+- Examples of style:
+  - Ohm's law table, circuit element diagrams, magnetism diagrams, etc.
+  - Classroom wall poster style.
+
+This image will be printed as a classroom poster, so it must be very clean and readable.
+`;
 
     const r = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
@@ -78,7 +116,7 @@ app.post("/api/visual", async (req, res) => {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt,
+        prompt: visualPrompt,
         n: 1,
         size
       })
@@ -104,7 +142,6 @@ app.post("/api/visual", async (req, res) => {
       .json({ error: e.message || "Sunucu hatası (visual)" });
   }
 });
-
 
 // =============================
 // 3) KONU ÖZETİ & QUIZ ENDPOINT
@@ -163,3 +200,4 @@ app.post("/api/summary", async (req, res) => {
 app.listen(process.env.PORT || 3000, () =>
   console.log("✅ Bengü AI backend çalışıyor")
 );
+
